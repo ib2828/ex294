@@ -1,0 +1,18 @@
+- name: Create archive
+  hosts: database
+  become: true
+  become_user: root
+  tasks:
+   - name: Create a file
+     lineinfile:
+        path: /mnt/mysql_backups/database_list.txt
+        line: dev,test,qa,prod
+        create: true
+
+   - name: Create archive file
+     archive:
+         path: /mnt/mysql_backups/database_list.txt
+         dest: /mnt/mysql_backups/archive.gz
+         format: gz
+         force_archive: true
+

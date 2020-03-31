@@ -1,0 +1,45 @@
+- name: Create users
+  hosts: all
+  become: true
+  become_user: root
+  vars_files: 
+      - vars/user_list.yml
+      - secret.yml
+  tasks:
+    - name: Create users on webservers
+      user:
+        name: "{{ item.username }}"
+        uid: "{{ item.uid }}"
+        groups: wheel
+        append: yes
+        shell: /bin/bash
+        password: "{{ 'user_passwd' | password_hash('sha512') }}"
+      loop: "{{ users}}"
+      when: ansible_fqdn in groups['webservers'] and item.uid < 2000
+
+    - name: Create users on database
+      user:
+        name: "{{ item.username }}"
+        uid: "{{ item.uid }}"
+        groups: wheel
+        append: yes
+        shell: /bin/bash
+        password: "{{ 'user_passwd' | password_hash('sha512') }}"
+      loop: "{{ users}}"
+      when: ansible_fqdn in groups['database'] and item.uid > 2000
+
+    - name: Copy ssh keys
+      authorized_key:
+         user: "{{ item.username }}"
+         state: present
+         key: "{{ lookup('file', '/home/automation/.ssh/id_rsa.pub') }}"
+      loop: "{{ users }}"
+      when: ansible_fqdn in groups['webservers'] and item.uid < 2000
+    
+    - name: Copy ssh keys
+      authorized_key:
+         user: "{{ item.username }}"
+         state: present
+         key: "{{ lookup('file', '/home/automation/.ssh/id_rsa.pub') }}"
+      loop: "{{ users }}"
+      when: ansible_fqdn in groups['database'] and item.uid > 2000

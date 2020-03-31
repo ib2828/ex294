@@ -1,0 +1,11 @@
+---
+# defaults file for sample-apache
+my_role_packages:
+     - httpd
+     - mod_ssl
+     - php
+my_role_service: httpd
+my_role_fwport:
+        - 80
+        - 443
+

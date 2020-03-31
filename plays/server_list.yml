@@ -1,0 +1,14 @@
+- name: Create server list
+  hosts: all
+  become: true
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: Copy the template
+      template:
+          src: templates/server_list.j2
+          dest: /etc/server_list.txt
+          owner: automation
+          mode: '0600'
+          setype: net_conf_t
+      when: inventory_hostname in groups['proxy']

@@ -1,0 +1,6 @@
+---
+# handlers file for sample-apache
+- name: restart apache
+  service: 
+    name: "{{ my_role_service }}"
+    state: restarted

@@ -1,0 +1,30 @@
+---
+# tasks file for sample-apache
+- name: Install packages
+  yum:
+   name: "{{ item }}"
+   state: present
+  loop: "{{ my_role_packages }}"
+
+- name: Start Apache
+  service:
+     name: "{{ my_role_service }}"
+     state: started
+     enabled: true
+
+- name: Configure Firewall
+  firewalld:
+     port: "{{ item }}/tcp"
+     state: enabled
+     permanent: yes
+     immediate: yes
+  loop: "{{ my_role_fwport }}"
+
+- name: Copy the template
+  template:
+     src: index.html.j2
+     dest: /var/www/html/index.html
+     owner: root
+     group: root
+     mode: "0644"
+  notify: restart apache

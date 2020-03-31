@@ -1,0 +1,82 @@
+---
+# tasks file for sample-mysql
+- name: Create a partition on /dev/sdb
+  parted:
+     device: /dev/sdb
+     number: 1
+     state: present
+     label: gpt
+     name: primary
+     flags: lvm
+     part_start: 1MiB
+     part_end: 800MiB
+
+- name: Create a Vulme Group
+  lvg:
+    vg: vg_database
+    pvs: /dev/sdb1
+
+- name: Create a logical volume
+  lvol:
+    vg: vg_database
+    lv: lv_mysql
+    size: 512m
+
+- name: Create a file system
+  filesystem:
+    fstype: xfs
+    dev: /dev/vg_database/lv_mysql
+
+- name: Mount file system
+  mount: 
+    path: /mnt/mysql_backups
+    src: /dev/vg_database/lv_mysql
+    fstype: xfs
+    state: mounted
+
+- name: Install pre-requisite PyMySQL
+  yum:
+    name: python3-PyMySQL
+    state: present
+
+- name: Install mysql package
+  yum:
+    name: mysql-community-server
+    state: present
+
+- name: Template the configuration
+  template:
+    src: my.cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: "644"
+  notify: restart mysql
+
+- name: Start mysql
+  service:
+      name: mysql
+      state: started
+      enabled: yes
+
+- name: Open Firewall port
+  firewalld:
+     port: 3306/tcp
+     permanent: yes
+     state: enabled
+     immediate: yes
+
+- name: Update MySQL Root Password
+  mysql_user: 
+    name: root 
+    host: "{{ item }}" 
+    password: "{{ database_password }}"
+    login_user: root
+    login_password: "{{ database_password }}"
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+  loop:
+    - 127.0.0.1
+    - ::1
+    - localhost 

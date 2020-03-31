@@ -1,0 +1,7 @@
+- name: Configure apache
+  hosts: webservers
+  become: true
+  become_user: root
+  gather_facts: yes
+  roles:
+      - sample-apache
