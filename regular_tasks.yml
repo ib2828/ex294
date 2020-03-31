@@ -1,0 +1,10 @@
+- name: Create a cron job
+  hosts: proxy
+  become: true
+  become_user: root
+  tasks:
+    - name: Create a root crontab
+      cron:
+        minute: "0"
+        hour: "*"
+        job: "date >> /var/log/time.log"

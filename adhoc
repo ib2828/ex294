@@ -1,0 +1,4 @@
+#ansible all -m user -a "name=automation groups=wheel append=yes state=present" -u root
+#ansible all -m authorized_key -a "user=automation key='{{ lookup('file', '/home/automation/.ssh/id_rsa.pub') }}' state=present" -u root
+#ansible all -m lineinfile -a "path=/etc/sudoers state=present regexp='^%wheel' line='%wheel ALL=(ALL) NOPASSWD: ALL' validate='visudo -cf %s'" -u root
+ansible all -m user -a "user=automation  password=6$mysecretsalt$3.1aQi8DodZ22ZCbgneUNwbK7zVVNRniMnT9X42QAciGg0vesJzHfS6bJHCxhyd4OcPDcuFDxnd0R6KHw9sDr/" -u root
